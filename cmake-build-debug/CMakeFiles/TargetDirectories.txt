@@ -1,0 +1,3 @@
+D:/projects for lessons/CGchuyan/cmake-build-debug/CMakeFiles/CGchuyan.dir
+D:/projects for lessons/CGchuyan/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/projects for lessons/CGchuyan/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,3 @@
+D:\jetbrains\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f CMakeFiles\CGchuyan.dir/objects.a
+C:\PROGRA~1\mingw64\bin\ar.exe cr CMakeFiles\CGchuyan.dir/objects.a @CMakeFiles\CGchuyan.dir\objects1.rsp
+C:\PROGRA~1\mingw64\bin\G__~1.EXE -g -Wl,--whole-archive CMakeFiles\CGchuyan.dir/objects.a -Wl,--no-whole-archive -o CGchuyan.exe -Wl,--out-implib,libCGchuyan.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\CGchuyan.dir\linklibs.rsp
