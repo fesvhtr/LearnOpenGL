@@ -187,7 +187,7 @@ int main()
             ourShader.setVec3("viewPos",camera.Position);
             ourShader.setVec3("light.position",lightPos);
             ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-            ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+            ourShader.setVec3("light.diffuse", 0.4f, 0.4f, 0.4f);
             ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
             ourShader.setVec3("material_zzface.specular", 0.5f, 0.5f, 0.5f);
             ourShader.setFloat("material_zzface.shininess", 64.0f);
