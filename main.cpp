@@ -149,11 +149,11 @@ int main()
 //    TEXTURE texture1("D:/projects for lessons/CGchuyan/zzface.jpg");
 //    TEXTURE texture2("D:/projects for lessons/CGchuyan/container.jpg");
     unsigned int diffuse_map1 = loadTexture("D:/projects for lessons/CGchuyan/zzface.jpg");
-    //unsigned int diffuse_map2 = loadTexture("D:/projects for lessons/CGchuyan/container.jpg");
+    unsigned int diffuse_map2 = loadTexture("D:/projects for lessons/CGchuyan/container.jpg");
 
     ourShader.use();
     ourShader.setInt("material_zzface.diffuse",0);
-//    ourShader.setInt("material_container.diffuse",0);
+    ourShader.setInt("material_container.diffuse",1);
     //ourShader.setInt("material.specular",1);
     while (!glfwWindowShouldClose(window))
     {
@@ -195,8 +195,8 @@ int main()
             ourShader.setFloat("material_container.shininess", 64.0f);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, diffuse_map1);
-//            glActiveTexture(GL_TEXTURE1);
-//            glBindTexture(GL_TEXTURE_2D,diffuse_map2);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, diffuse_map2);
             // init all matrices
             glm::mat4 model= glm::mat4(1.0f);
             glm::mat4 trans = glm::mat4(1.0f);
