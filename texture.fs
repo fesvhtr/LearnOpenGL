@@ -29,7 +29,7 @@ void main()
     // ambient
     vec3 ambient = light.ambient *
     //texture(material_container.diffuse, TexCoords).rgb;
-    mix(texture(material_zzface.diffuse, TexCoords),texture(material_container.diffuse, TexCoords),0.5).rgb;
+    mix(texture(material_zzface.diffuse, TexCoords),texture(material_container.diffuse, TexCoords),0).rgb;
 
     // diffuse
     vec3 norm = normalize(Normal);
@@ -37,7 +37,7 @@ void main()
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diff *
     //texture(material_container.diffuse, TexCoords).rgb;
-    mix(texture(material_zzface.diffuse, TexCoords),texture(material_container.diffuse, TexCoords),0.5).rgb;
+    mix(texture(material_zzface.diffuse, TexCoords),texture(material_container.diffuse, TexCoords),0).rgb;
 
     // specular
     vec3 viewDir = normalize(viewPos - FragPos);
