@@ -97,16 +97,7 @@ float transparentVertices[] = {
         1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
         1.0f,  0.5f,  0.0f,  1.0f,  0.0f
 };
-//vegetable data
-//std::vector<glm::vec3> vegetation;
-//vegetation = {
-//
-//};
-//vegetation.push_back(glm::vec3(-1.5f,  0.0f, -0.48f));
-//vegetation.push_back(glm::vec3( 1.5f,  0.0f,  0.51f));
-//vegetation.push_back(glm::vec3( 0.0f,  0.0f,  0.7f));
-//vegetation.push_back(glm::vec3(-0.3f,  0.0f, -2.3f));
-//vegetation.push_back(glm::vec3( 0.5f,  0.0f, -0.6f));
+
 int main()
 {
     // glfw: initialize and configure
@@ -135,19 +126,26 @@ int main()
         return -1;
     }
     //config global opengl test-----------------------------------
+    //Face Culling----------------------------------------
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK);
+//    glFrontFace(GL_CW);
     //depth test------------------------------------------
     glEnable(GL_DEPTH_TEST);
     //set z-buffer type
     glDepthFunc(GL_LESS);
     //glDepthFunc(GL_ALWAYS);
+    //-----------------------------------------------
     //stencil buffer------------------------------------
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    //---------------------------------------
     //blend config----------------------------------------
     //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // build and compile our shader program
     Shader ourShader("D:/projects for lessons/CGchuyan/texture.vs",
                      "D:/projects for lessons/CGchuyan/texture.fs");
@@ -173,10 +171,13 @@ int main()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
     //set light VAO
-    unsigned int lightVAO;
+    unsigned int lightVAO,lightVBO;
     glGenVertexArrays(1, &lightVAO);
+    glGenBuffers(1, &lightVBO);
     glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindVertexArray(lightVAO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     //set transparent window VAO,VBO
@@ -193,7 +194,7 @@ int main()
     //set textures
 //    TEXTURE texture1("D:/projects for lessons/CGchuyan/zzface.jpg");
 //    TEXTURE texture2("D:/projects for lessons/CGchuyan/container.jpg");
-    unsigned int diffuse_map1 = loadTexture("D:/projects for lessons/CGchuyan/zzface.jpg");
+    unsigned int diffuse_map1 = loadTexture("D:/projects for lessons/CGchuyan/medo.jpg");
     unsigned int diffuse_map2 = loadTexture("D:/projects for lessons/CGchuyan/container.jpg");
     unsigned int window_map = loadTexture("D:/projects for lessons/CGchuyan/window.png");
     //set shader int for each TEXTURE N
@@ -230,9 +231,7 @@ int main()
         projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //render light cube---------------------------------------------
         glStencilMask(0x00);
-        drawLightCube(lt_shader,VAO);
-        //render window----------------------------------------------------
-        //drawWindow(window_shader,windowVAO,window_map);
+        drawLightCube(lt_shader,lightVAO);
         //render cubes--------------------------------------------------------
         for (unsigned int i = 0; i < 10; i++)
         {
@@ -268,6 +267,7 @@ int main()
             trans = projection * view * model;
             ourShader.setMat4("model",model);
             ourShader.setMat4("trans", trans);
+            glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             //2st
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
@@ -284,6 +284,7 @@ int main()
             trans = projection * view * model;
             edge_shader.setMat4("model",model);
             edge_shader.setMat4("trans", trans);
+            glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glStencilMask(0xFF);
             //glEnable(GL_DEPTH_TEST);
@@ -291,6 +292,7 @@ int main()
             //else the next cube's stencil value equals 1 - past edge be covered
             glClear(GL_STENCIL_BUFFER_BIT);
         }
+
         //render window----------------------------------------------------
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF);
@@ -302,6 +304,8 @@ int main()
     // delete all vertex obj
     glDeleteVertexArrays(1, &VAO);
     glDeleteVertexArrays(1, &windowVAO);
+    glDeleteVertexArrays(1, &lightVAO);
+    glDeleteBuffers(1, &lightVBO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &windowVBO);
     glfwTerminate();
@@ -407,6 +411,7 @@ unsigned int loadTexture(char const * path)
 }
 //draw light cube
 void drawLightCube(Shader lt_shader,unsigned int VAO){
+    glBindVertexArray(VAO);
     //init all matrices
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
@@ -422,7 +427,6 @@ void drawLightCube(Shader lt_shader,unsigned int VAO){
     lt_shader.setMat4("lt_trans",lt_trans);
     //draw light cube
     glDrawArrays(GL_TRIANGLES,0,36);
-    glBindVertexArray(VAO);
 }
 //draw window
 void drawWindow(Shader window_shader,unsigned int windowVAO,unsigned int map){
