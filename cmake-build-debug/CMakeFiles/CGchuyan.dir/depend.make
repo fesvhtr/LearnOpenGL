@@ -214,6 +214,7 @@ CMakeFiles/CGchuyan.dir/main.cpp.obj: \
  ../include/shader.h \
  ../include/stb_image.h \
  ../include/texture.h \
+ ../global.h \
  ../main.cpp
 CMakeFiles/CGchuyan.dir/stb_image.cpp.obj: \
  ../include/stb_image.h \

@@ -1522,6 +1522,8 @@ arm_neon.h
 
 ../include/texture.h
 
+D:/projects for lessons/CGchuyan/global.h
+
 D:/projects for lessons/CGchuyan/main.cpp
 glad/glad.h
 -
@@ -1543,4 +1545,6 @@ stb_image.h
 -
 texture.h
 -
+global.h
+D:/projects for lessons/CGchuyan/global.h
 
