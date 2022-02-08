@@ -82,6 +82,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="D:/projects for lessons/CGchuyan/global.h">
+			<Option target="CGchuyan"/>
+		</Unit>
 		<Unit filename="D:/projects for lessons/CGchuyan/include/camera.h">
 			<Option target="CGchuyan"/>
 		</Unit>
