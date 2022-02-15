@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 
 struct Material {
@@ -15,9 +15,11 @@ struct Light {
     vec3 specular;
 };
 
-in vec3 FragPos;
-in vec3 Normal;
-in vec2 TexCoords;
+in VS_OUT{
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+} fs_in;
 
 uniform vec3 viewPos;
 uniform Material material_zzface;
@@ -29,18 +31,18 @@ void main()
     // ambient
     vec3 ambient = light.ambient *
     //texture(material_container.diffuse, TexCoords).rgb;
-    mix(texture(material_zzface.diffuse, TexCoords),texture(material_container.diffuse, TexCoords),0).rgb;
+    mix(texture(material_zzface.diffuse, fs_in.TexCoords),texture(material_container.diffuse, fs_in.TexCoords),0).rgb;
 
     // diffuse
-    vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(light.position - FragPos);
+    vec3 norm = normalize(fs_in.Normal);
+    vec3 lightDir = normalize(light.position - fs_in.FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diff *
     //texture(material_container.diffuse, TexCoords).rgb;
-    mix(texture(material_zzface.diffuse, TexCoords),texture(material_container.diffuse, TexCoords),0).rgb;
+    mix(texture(material_zzface.diffuse, fs_in.TexCoords),texture(material_container.diffuse, fs_in.TexCoords),0).rgb;
 
     // specular
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material_container.shininess);
     vec3 specular = light.specular * (spec * material_container.specular);

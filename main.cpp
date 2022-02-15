@@ -160,6 +160,13 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    //set uniform buffer object
+    unsigned int UBO;
+    glGenBuffers(1, &UBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+    glBufferData(GL_UNIFORM_BUFFER, 128, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
     //set textures
 //    TEXTURE texture1("D:/projects for lessons/CGchuyan/zzface.jpg");
 //    TEXTURE texture2("D:/projects for lessons/CGchuyan/container.jpg");
@@ -248,8 +255,12 @@ int main()
             model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
             //model = glm::rotate(model,  glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
             trans = projection * view * model;
-            ourShader.setMat4("model",model);
-            ourShader.setMat4("trans", trans);
+            glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(trans));
+            glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(model));
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+//            ourShader.setMat4("model",model);
+//            ourShader.setMat4("trans", trans);
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             //2st
