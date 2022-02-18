@@ -1,7 +1,9 @@
 //
 // Created by fesvh on 2022/2/8.
 //
-
+#include <glm/glm.hpp>
+#include <iostream>
+#include <vector>
 #ifndef CGCHUYAN_GLOBAL_H
 #define CGCHUYAN_GLOBAL_H
 //cube vertex data
@@ -126,5 +128,10 @@ std::vector<std::string> faces{
         "D:/projects for lessons/CGchuyan/skybox/front.jpg",
         "D:/projects for lessons/CGchuyan/skybox/back.jpg"
 };
-
+float points[] = {
+        -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 左上
+        0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // 右上
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
+        -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // 左下
+};
 #endif //CGCHUYAN_GLOBAL_H

@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
-add_executable(CGchuyan main.cpp stb_image.cpp ${PROJECT_SOURCE_DIR}/src/glad.c include/camera.h include/texture.h global.h)
+add_executable(CGchuyan main.cpp stb_image.cpp ${PROJECT_SOURCE_DIR}/src/glad.c
+        include/camera.h include/texture.h include/global.h)
 
 target_link_libraries(CGchuyan ${PROJECT_SOURCE_DIR}/lib/glfw3.dll)

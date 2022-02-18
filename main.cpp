@@ -8,7 +8,7 @@
 #include <iostream>
 #include <stb_image.h>
 #include <texture.h>
-#include "global.h"
+#include <global.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -19,6 +19,7 @@ unsigned int loadTexture(const char *path);
 unsigned int loadCubemap(std::vector<std::string> faces);
 void drawLightCube(Shader lt_shader,unsigned int VAO);
 void drawWindow(Shader window_shader,unsigned int VAO,unsigned int map);
+void drawPoints(Shader point_shader,unsigned int VAO);
 // global settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -38,6 +39,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
     // glfw window creation
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
@@ -58,22 +60,25 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
     //config global opengl test-----------------------------------
     //Face Culling----------------------------------------
 //    glEnable(GL_CULL_FACE);
 //    glCullFace(GL_BACK);
 //    glFrontFace(GL_CW);
+    //MSAA--------------------------------
+    glEnable(GL_MULTISAMPLE);
+
     //depth test------------------------------------------
     glEnable(GL_DEPTH_TEST);
     //set z-buffer type
     glDepthFunc(GL_LESS);
-    //glDepthFunc(GL_ALWAYS);
-    //-----------------------------------------------
+
     //stencil buffer------------------------------------
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    //---------------------------------------
+
     //blend config----------------------------------------
     //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
     glEnable(GL_BLEND);
@@ -90,6 +95,8 @@ int main()
                          "D:/projects for lessons/CGchuyan/window.fs");
     Shader sky_shader("D:/projects for lessons/CGchuyan/skybox.vs",
                       "D:/projects for lessons/CGchuyan/skybox.fs");
+
+
     //set a framebuffer
 //    unsigned int FBO;
 //    glGenFramebuffers(1,&FBO);
@@ -171,7 +178,7 @@ int main()
 //    TEXTURE texture1("D:/projects for lessons/CGchuyan/zzface.jpg");
 //    TEXTURE texture2("D:/projects for lessons/CGchuyan/container.jpg");
     //load 2D textures
-    unsigned int diffuse_map1 = loadTexture("D:/projects for lessons/CGchuyan/zzface.jpg");
+    unsigned int diffuse_map1 = loadTexture("D:/projects for lessons/CGchuyan/medo.jpg");
     unsigned int diffuse_map2 = loadTexture("D:/projects for lessons/CGchuyan/container.jpg");
     unsigned int window_map = loadTexture("D:/projects for lessons/CGchuyan/window.png");
     //load skybox
@@ -185,8 +192,7 @@ int main()
     sky_shader.use();
     sky_shader.setInt("skybox",0);
     //ourShader.setInt("material.specular",1);
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)){
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -223,69 +229,96 @@ int main()
         glStencilMask(0x00);
         drawLightCube(lt_shader,lightVAO);
         //render cubes--------------------------------------------------------
+
+        ourShader.use();
+        //set cube shader
+        ourShader.setVec3("viewPos",camera.Position);
+        ourShader.setVec3("light.position",lightPos);
+        ourShader.setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
+        ourShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
+        ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        //set textures
+        ourShader.setVec3("material_zzface.specular", 0.5f, 0.5f, 0.5f);
+        ourShader.setFloat("material_zzface.shininess", 64.0f);
+        ourShader.setVec3("material_container.specular", 0.5f, 0.5f, 0.5f);
+        ourShader.setFloat("material_container.shininess", 64.0f);
+        //1st. render pass, draw objects as normal, writing to the stencil buffer
+        //set all stencil 1
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+        //texture active and bind
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuse_map1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, diffuse_map2);
+        //set buffer for model in shader for instancing
+        glm::mat4 *model_matrices;
+        model_matrices = new glm::mat4[10];
+        for(unsigned int j = 0; j < 10; j++){
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model,cubePositions[j]);
+            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+            model_matrices[j] = model;
+        }
+        //matrix buffer for model
+        unsigned int buffer;
+        glGenBuffers(1, &buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, 10 * sizeof(glm::mat4), &model_matrices[0], GL_STATIC_DRAW);
         for (unsigned int i = 0; i < 10; i++)
         {
-            ourShader.use();
-            //set cube shader
-            ourShader.setVec3("viewPos",camera.Position);
-            ourShader.setVec3("light.position",lightPos);
-            ourShader.setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
-            ourShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
-            ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-            //set textures
-            ourShader.setVec3("material_zzface.specular", 0.5f, 0.5f, 0.5f);
-            ourShader.setFloat("material_zzface.shininess", 64.0f);
-            ourShader.setVec3("material_container.specular", 0.5f, 0.5f, 0.5f);
-            ourShader.setFloat("material_container.shininess", 64.0f);
-            //1st. render pass, draw objects as normal, writing to the stencil buffer
-            //set all stencil 1
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            glStencilMask(0xFF);
-            //texture active and bind
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, diffuse_map1);
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, diffuse_map2);
-            // init model and trans each render
-            glm::mat4 model= glm::mat4(1.0f);
-            glm::mat4 trans = glm::mat4(1.0f);
-            //calculate model
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * (i+1);
-            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-            //model = glm::rotate(model,  glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-            trans = projection * view * model;
-            glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(trans));
-            glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(model));
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-//            ourShader.setMat4("model",model);
-//            ourShader.setMat4("trans", trans);
             glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            //2st
-            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-            glStencilMask(0x00);
-            //glDisable(GL_DEPTH_TEST);
-            edge_shader.use();
-            model= glm::mat4(1.0f);
-            trans = glm::mat4(1.0f);
-            //calculate model
-            model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-            //model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-            model = glm::scale(model,glm::vec3(1.1f,1.1f,1.1f));
-            trans = projection * view * model;
-            edge_shader.setMat4("model",model);
-            edge_shader.setMat4("trans", trans);
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glStencilMask(0xFF);
-            //glEnable(GL_DEPTH_TEST);
-            //clear stencil buffer every time - so every cube has own edge
-            //else the next cube's stencil value equals 1 - past edge be covered
-            glClear(GL_STENCIL_BUFFER_BIT);
+            // set attribute pointers for matrix (4 times vec4)
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+            glEnableVertexAttribArray(4);
+            glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+            glEnableVertexAttribArray(5);
+            glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+            glEnableVertexAttribArray(6);
+            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+            glVertexAttribDivisor(3, 1);
+            glVertexAttribDivisor(4, 1);
+            glVertexAttribDivisor(5, 1);
+            glVertexAttribDivisor(6, 1);
+            glBindVertexArray(0);
         }
+        // init model and trans each render
+        glm::mat4 trans = glm::mat4(1.0f);
+        glm::mat4 model = glm::mat4(1.0f);
+        //model = glm::translate(model,cubePositions[i]);
+        //calculate model
+        float angle = 20.0f;
+        //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glBindVertexArray(VAO);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 10);
+        //2nd - edge
+//            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+//            glStencilMask(0x00);
+//            //glDisable(GL_DEPTH_TEST);
+//            edge_shader.use();
+//            model= glm::mat4(1.0f);
+//            trans = glm::mat4(1.0f);
+//            //calculate model
+//            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+//            //model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+//            model = glm::scale(model,glm::vec3(1.1f,1.1f,1.1f));
+//            trans = projection * view * model;
+//            edge_shader.setMat4("model",model);
+//            edge_shader.setMat4("trans", trans);
+//            glBindVertexArray(VAO);
+//            glDrawArrays(GL_TRIANGLES, 0, 36);
+//            glStencilMask(0xFF);
+        //glEnable(GL_DEPTH_TEST);
+        //clear stencil buffer every time - so every cube has own edge
+        //else the next cube's stencil value equals 1 - past edge be covered
+        //glClear(GL_STENCIL_BUFFER_BIT);
+
         //render window----------------------------------------------------
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF);
@@ -294,6 +327,7 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
     // delete all vertex obj
     glDeleteVertexArrays(1, &VAO);
     glDeleteVertexArrays(1, &windowVAO);
@@ -471,4 +505,8 @@ void drawWindow(Shader window_shader,unsigned int windowVAO,unsigned int map){
     window_trans = projection * view * window_model;
     window_shader.setMat4("window_trans",window_trans);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+//draw points with geography shader
+void drawPoints(Shader point_shader,unsigned int VAO){
+
 }

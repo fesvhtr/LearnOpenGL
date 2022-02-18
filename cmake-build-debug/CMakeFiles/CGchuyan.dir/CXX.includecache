@@ -1474,6 +1474,14 @@ detail/setup.hpp
 detail/func_vector_relational.inl
 ../include/glm/detail/func_vector_relational.inl
 
+../include/global.h
+glm/glm.hpp
+-
+iostream
+-
+vector
+-
+
 ../include/shader.h
 glad/glad.h
 -
@@ -1522,8 +1530,6 @@ arm_neon.h
 
 ../include/texture.h
 
-D:/projects for lessons/CGchuyan/global.h
-
 D:/projects for lessons/CGchuyan/main.cpp
 glad/glad.h
 -
@@ -1546,5 +1552,5 @@ stb_image.h
 texture.h
 -
 global.h
-D:/projects for lessons/CGchuyan/global.h
+-
 

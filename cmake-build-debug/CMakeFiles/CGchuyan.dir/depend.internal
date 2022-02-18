@@ -211,10 +211,10 @@ CMakeFiles/CGchuyan.dir/main.cpp.obj
  ../include/glm/vec3.hpp
  ../include/glm/vec4.hpp
  ../include/glm/vector_relational.hpp
+ ../include/global.h
  ../include/shader.h
  ../include/stb_image.h
  ../include/texture.h
- D:/projects for lessons/CGchuyan/global.h
  D:/projects for lessons/CGchuyan/main.cpp
 CMakeFiles/CGchuyan.dir/stb_image.cpp.obj
  ../include/stb_image.h
