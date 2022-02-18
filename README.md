@@ -1,2 +1,0 @@
-# LearnOpenGL
-Just for leaning
